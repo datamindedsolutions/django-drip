@@ -234,9 +234,9 @@ class DripBase(object):
                 result = message_instance.message.send()
                 if result:
                     # create notification history object
-                    user.notifcation_history.create(medium='email',
-                                                    payload=message_instance.body,
-                                                    subject=message_instance.subject)
+                    user.notification_history.create(medium='email',
+                                                     payload=message_instance.body,
+                                                     subject='drip_{}'.format(message_instance.subject))
                     SentDrip.objects.create(
                         drip=self.drip_model,
                         user=user,

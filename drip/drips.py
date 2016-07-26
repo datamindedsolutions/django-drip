@@ -233,6 +233,10 @@ class DripBase(object):
             try:
                 result = message_instance.message.send()
                 if result:
+                    # create notification history object
+                    user.notifcation_history.create(medium='email',
+                                                    payload=message_instance.body,
+                                                    subject=message_instance.subject)
                     SentDrip.objects.create(
                         drip=self.drip_model,
                         user=user,
@@ -242,10 +246,7 @@ class DripBase(object):
                         body=message_instance.body
                     )
                     count += 1
-                    # create notification history object
-                    user.notifcation_history.create(medium='email',
-                                                    payload=message_instance.body,
-                                                    subject=message_instance.subject)
+
             except Exception as e:
                 logging.error("Failed to send drip %s to user %s: %s" % (self.drip_model.id, user, e))
 

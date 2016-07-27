@@ -1,5 +1,6 @@
 import operator
 import functools
+from datetime import timedelta
 
 from django.conf import settings
 from django.db.models import Q
@@ -53,8 +54,8 @@ class DripMessage(object):
 
     @property
     def from_email_name(self):
-        return self.drip_base.from_email_name
 
+        return self.drip_base.from_email_name
     @property
     def context(self):
         if not self._context:
@@ -208,10 +209,16 @@ class DripBase(object):
         Do an exclude for all Users who have a SentDrip already.
         """
         target_user_ids = self.get_queryset().values_list('id', flat=True)
-        exclude_user_ids = SentDrip.objects.filter(date__lt=conditional_now(),
-                                                   drip=self.drip_model,
-                                                   user__id__in=target_user_ids)\
-                                           .values_list('user_id', flat=True)
+        frequency = self.drip_model.frequency
+        sent_drips = SentDrip.objects.filter(drip=self.drip_model,
+                                             user__id__in=target_user_ids)
+        if frequency > 0:
+            sent_drips = sent_drips.filter(date__gt=conditional_now() - timedelta(days=frequency))
+        else:
+            sent_drips = sent_drips.filter(date__lt=conditional_now())
+
+        exclude_user_ids = sent_drips.values_list('user_id', flat=True)
+
         self._queryset = self.get_queryset().exclude(id__in=exclude_user_ids)
 
     def send(self):

@@ -6,7 +6,7 @@ from drip.models import Drip
 
 
 @task(name='tasks.send_drips')
-def send_drips(messages):
+def send_drips():
     """
     Celery standard task for sending drip.
     """
